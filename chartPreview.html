@@ -1,0 +1,395 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Charting Test Page</title>
+		<link type="text/css" rel="stylesheet" href="visualize.jQuery.css"/>
+		<link type="text/css" rel="stylesheet" href="demopage.css"/>
+		<link type="text/css" href="css/ui-lightness/jquery-ui-1.7.2.custom.css" rel="stylesheet" />	
+
+		<script type="text/javascript" src="jquery-1.3.2.min.js"></script>
+		<script type="text/javascript" src="js/jquery-1.3.2.min.js"></script>
+		<script type="text/javascript" src="js/jquery-ui-1.7.2.custom.min.js"></script>
+		
+		<!--[if IE]><script type="text/javascript" src="excanvas.compiled.js"></script><![endif]-->
+		<script type="text/javascript" src="visualize.jQuery.js"></script>
+		<script type="text/javascript" src="tablesorter.jQuery.js"></script>
+				
+ 		<script type="text/javascript" src="chart.js"></script>
+		<style>
+			/*.barChart, .lineChart, .areaChart, .pieChart { display : none }*/
+			.chartContainer { padding : 50px; }
+			#buttonControls { margin: 50px;}s
+			input { margin : 3px;}
+			.debugPreview, .cpreview { width : 40%}
+			.debugPreview, .templates  {display:none;}
+			label { width: 8em;
+					text-align: right;
+					margin-right: 0.5em;
+			}
+			.chkWrapper {
+				padding:20px;
+			}
+			
+			.computed { background : #eee; font-style:italic;}
+			
+			TH {  background : #bbb; }
+			
+			.ui-slider-horizontal {
+				background:#c3A828;
+				border:8px solid silver;
+				margin:3px;
+				width:240px
+			} 
+			
+			.ui-slider-handle {
+				height:16px;
+			} 
+
+		</style>
+    </head>
+	<!--
+		define functions for table transform
+		define functions for calculated columns
+		define functions for calculated rows
+	-->	
+    <body>
+        <h1>Chart Preview</h1>
+		
+		<div class='templates'>
+			<div id='dropdownTemplate'>
+				<select class='measureList'></select><input class=addrow type=button value='+'><input class=removerow type=button value='-'><br/>
+			</div>
+		</div>
+
+		<div id='container_1'></div>
+		<p/>
+
+		<span>report URL</span><span id='jsonview'></span>
+		<p/>
+		
+		<div>
+		<input id=btnpreview class='previewButton' type=button value='server response'/>
+		<p/>
+		<textarea id='preview' class='debugPreview' cols=80 rows=5></textarea>
+		</div>
+		
+		<div>
+        <input id=btncpreview  class='previewButton' type=button value='charting data'/>
+		<p/>
+		<textarea id='cpreview' class='debugPreview' cols=80 rows=5></textarea>
+		</div>
+
+
+		<div>
+        <input id=btntpreview class='previewButton' type=button value='transforms'/>
+		<p/>
+		<textarea id='tpreview' class='debugPreview' cols=80 rows=5></textarea>
+		</div>
+
+		<div id='testArea'></div>
+
+
+<form class="chartConfiguratorThingy" style="display: block;">
+		<h2>Visualize Options:</h2>
+		
+		<fieldset>
+			<legend>Measures</legend>
+			<div id='measures'></div>
+		</fieldset>
+		
+		<fieldset>
+			<legend>Period</legend>			
+			<input name='rdView' class='frameChoice' type='radio' value='hours'/>hours
+			<input name='rdView' class='frameChoice' type='radio' value='days' checked/>Days
+			<input name='rdView' class='frameChoice' type='radio' value='weeks'/>Weeks
+			<input name='rdView' class='frameChoice' type='radio' value='months'/>Months
+			
+			<label for="periodRange">range:</label>
+			<input type="text" value="0..7" id="periodRange" name="periodRange" disabled=""/>
+            <div id='rangeSlider'></div>
+		</fieldset>
+		
+		<fieldset>
+			<legend>Top-n</legend>			
+			<input name='topN' class='nChoice' type='radio' value='other'/>other
+			<input name='topN' class='nChoice' type='radio' value='ignore'/>ignore
+
+			<label for="topRange">range:</label>
+			<input type="text" value="0..7" id="topRange" name="topRange" disabled=""/>
+            <div id='topRangeSlider'></div>
+		</fieldset>
+		
+		<fieldset class="typeOptions">
+			<legend>Chart Type Options</legend>
+				
+			<input name="type" class="chartSelect" type="radio" value="barChart" checked/><label class="radio" for="bar">Bar</label><br/>
+			<input name="type" class='chartSelect' type="radio" value="lineChart"/><label class="radio" for="line">Line</label><br/>
+			<input name="type" class='chartSelect' type="radio" value="areaChart"/><label class="radio" for="area">Area</label><br/>
+			<input name="type" class='chartSelect' type="radio" value="pieChart"/><label class="radio" for="pie">Pie</label><br/>
+				
+			<div class="dependencies" style="display: none;">
+				<div class="fieldGroup">
+					<label for="barMargin">barMargin:</label>
+					<input type="text" value="1" id="barMargin" name="barMargin" disabled=""/>
+				</div>
+				<div class="fieldGroup">
+					<label for="barGroupMargin">barGroupMargin:</label>
+					<input type="text" value="10" id="barGroupMargin" name="barGroupMargin" disabled=""/>
+				</div>
+			</div>
+			
+			<div class="dependencies" style="display: none;">
+				<div class="fieldGroup">
+					<label for="lineWeight">lineWeight</label>
+					<input type="text" value="4" id="lineWeight" name="lineWeight" disabled=""/>
+				</div>
+			</div>
+	
+			<div class="dependencies" style="display: none;">
+				<div class="fieldGroup">
+					<input type="text" value="4" id="lineWeight" name="lineWeight" disabled=""/>
+				</div>
+			</div>
+	
+			<div class="fieldGroup">
+				<div class="dependencies" style="display: block;">
+					<div class="fieldGroup">
+						<label for="pieMargin">pieMargin</label>
+						<input type="text" value="20" id="pieMargin" name="pieMargin"/>
+					</div>	
+					<div class="fieldGroup">
+						<label for="pieLabelPos">pieLabelPos:</label>
+						<select id="pieLabelPos" name="pieLabelPos">
+							<option value="inside">inside</option>
+							<option value="outside">outside</option>
+						</select>
+					</div>
+				</div>
+			</div>	
+		</fieldset>
+						
+		<fieldset>
+			<legend>Global Options:</legend>
+			
+			<div class="fieldGroup">
+				<label for="width">Width:</label><input type="text" value="" id="width" name="width"/>
+				<div id='optWidth'></div>
+			</div>
+			
+			<div class="fieldGroup">
+				<label for="height">Height:</label><input type="text" value="" id="height" name="height"/>
+				<div id='optHeight'></div>
+			</div>
+			
+			<div class="fieldGroup">
+				<label for="appendTitle">appendTitle:</label>
+				<select id="appendTitle" name="appendTitle">
+					<option value="true">True</option>
+					<option value="false">False</option>
+				</select>
+			</div>
+			
+			<div class="fieldGroup">
+				<label for="title">title:</label>
+				<input type="text" value="" id="title" name="title"/>
+			</div>
+			
+			<div class="fieldGroup">
+				<label for="appendKey">appendKey:</label>
+				<select id="appendKey" name="appendKey">
+					<option value="true">True</option>
+					<option value="false">False</option>
+				</select>
+			</div>
+			
+			<div class="fieldGroup">
+				<label for="colors">colors:</label>
+				<input type="text" value="['#be1e2d','#666699','#92d5ea','#ee8310','#8d10ee','#5a3b16','#26a4ed','#f45a90','#e9e744']" id="colors" name="colors"/>
+			</div>
+			
+			<div class="fieldGroup">
+				<label for="textColors">textColors:</label>
+				<input type="text" value="[]" id="textColors" name="textColors"/>
+			</div>
+			
+			<div class="fieldGroup">
+				<label for="parseDirection">parseDirection:</label>
+				<select id="parseDirection" name="parseDirection">
+					<option value="x">x</option>
+					<option value="y">y</option>
+				</select>
+			</div>			
+		</fieldset>
+	
+	</form>
+		
+		<script>
+			 
+			function dataReceived(meta,measures,chartType,period,targetEl){
+				
+				// measures not required
+				var _meta = JSON.parse(meta);
+				
+				var _includeBlankRows = false;
+				
+				var targetEl = targetEl || '#container_1';
+				
+				return function(data){
+	
+					function filterPeriod(periodData){
+						return periodData.reverse();
+					};
+					
+					$('#preview').val(JSON.stringify(data));
+
+					var newData = [];
+					
+					$.each(data, function(item,arr){
+						for (prop in this){
+							if (typeof arr[prop].length == 0) {
+								newData.push([[getMeasureName(prop)]].concat(filterPeriod(arr[prop][period])));
+							} else {									
+								$.each(arr[prop], function(i,a){							
+								    newData.push( [[getMeasureName(prop),this.slice(0,this.length-1).join(' ')]].concat(filterPeriod(this[this.length-1][period])) ) ;								
+								});
+							}
+						}								
+					});		
+					
+					newData=newData.sort();
+							
+					$('#cpreview').val(JSON.stringify(newData));
+											
+						var transforms = {
+							toTable : function(data){
+								return data.filter(function(e,i,a){
+									return _includeBlankRows || e.reduce(function(p,c,ii,aa){
+										return p || parseInt(""+aa[ii])>0; // needs to be more solid
+									},false);
+								});
+							}							
+						}
+
+						//draw Table
+						drawChart(targetEl, {
+							"id": "uvd",
+							"attributes": measures,
+							"frame": period,
+							"chartType": chartType
+						}, transforms, newData);
+					}
+				
+			}
+
+			function show(id,targetEl){
+				
+				// dedupe array
+				id = id.reduce(function(a, b, i){return ~ a.indexOf(b) ? a : a.concat(b); }, [] );
+
+				var period 		= $(".frameChoice[@name=rdView]:checked").val();
+				var chartType 	= $(".chartSelect[@name=type]:checked").val();
+
+				var reportMeta 	= '{"pkg_id":20000002,"rc_ids":[%MEASURE%],"frames":[%FRAMES%]}'.replace('%MEASURE%',id).replace('%FRAMES%',reportCounters[id[0]||1].frames.join(','))
+
+				$('#jsonview').html(" <a href='http://98.129.237.9/test/report?json="+reportMeta+"'>"+reportMeta+"</a>");
+				
+				if (reportCounters[id[0]].frames[2] == 2) chartType = "pieChart";
+				
+				$.getJSON("http://98.129.237.9/test/report?callback=?", { json: reportMeta }, dataReceived(reportMeta,id,chartType,period,targetEl));
+			};
+			
+			function ready(){
+											
+				function triggerChart(){
+					$('#container_1').html("");
+					// select measures by class
+					
+					var ids =[];
+					
+					$.each($('.measureList:visible'), function(){
+						ids.push( this.selectedIndex+1 );
+					});
+									
+					var id_override = $('#id_override').val()||[];
+					if (id_override.length > 0) ids = id_override.split(',');
+					
+					show(ids);
+					
+				};
+
+ 			    $.each(reportCounters, function(i,val){
+					if (i<1) return
+					var dims = (val.dimensions.length>0) ? " ("+val.dimensions.join(" ")+")" : ""				
+					optionsList += "<option val='%INDEX%'>%VALUE%</option>".replace('%INDEX%',i).replace('%VALUE%',val.measure+dims)
+				});
+							
+				$('.fieldGroup INPUT')
+				// add enhanced select
+				$('.measureList').html(optionsList)		
+				
+				$('.chartControl').click(function(){ alert('TBD'); });
+				
+				$('.previewButton').click(
+					function(){ 
+						$("#"+this.id.replace('btn','')).toggle() 
+					}
+				);
+
+				function addrow(){ 
+					$('#measures').append($('#dropdownTemplate').clone(true).removeAttr('id'))
+					triggerChart();
+				};
+				$('.addrow').click(addrow);		
+				
+				function removerow(){ 
+					$(this).parent('div').remove();
+					triggerChart();
+				};
+				$('.removerow').click(removerow);	
+				
+				$('.measureList, .frameChoice, .chartSelect').change(triggerChart);	
+
+				addrow();
+	
+				// entire descriptive API should be part of chartRender();			
+				//chartRender([1,2,3], '#testArea');
+
+				$("#rangeSlider").slider({range: true,min: 0,max: 7,values: [0, 7],slide: function(event, ui) {$("#periodRange").val(ui.values[0] + '..' + ui.values[1]); }});
+				$("#topRangeSlider").slider({range: true,min: 0,max: 20,values: [20, 20],slide: function(event, ui) {$("#topRange").val(ui.values[0] + '..' + ui.values[1]); }});
+				$("#optWidth").slider({range: false, min: 0,max: 700, step:20, slide: function(event, ui) {$("#width").val(ui.value); }});
+				$("#optHeight").slider({range: false, min: 0,max: 700, step:20,slide: function(event, ui) {$("#height").val(ui.value); }});
+				
+			};		
+			
+			function chartRender(id, targetEl){
+				show([1,2,3],targetEl);	
+			};
+			
+			function getMeasures(data) { 			     
+				 reportCounters = []; 
+				 $.each(data,function(){
+				 	reportCounters[this.id] = this; 
+				 }) 
+				 ready();
+			}; 
+			
+			function getKey(measureName){
+				return reportCounters.reduce(function(p,c,i,a){
+					return (a[i].measure == measureName) ? i : p ;
+				},"")
+			}
+			
+			function getMeasureName(key){
+				return reportCounters[key].measure;
+			}
+
+ 			var optionsList = "";
+			var reportCounters = null;
+			
+		</script>		
+		
+ 		<script type="text/javascript" src="http://98.129.237.9/test/measures?pkgid=20000002&callback=getMeasures"></script>
+		
+	</body>
+</html>
